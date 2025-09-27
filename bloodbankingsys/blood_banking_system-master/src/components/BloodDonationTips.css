@@ -1,0 +1,151 @@
+.blood-donation-tips {
+  padding: 40px 0;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 200px);
+}
+
+.blood-donation-tips .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.blood-donation-tips .page-title {
+  text-align: center;
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.blood-donation-tips .page-title:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background-color: var(--primary-color);
+  border-radius: 2px;
+}
+
+.blood-donation-tips .tips-section {
+  margin-bottom: 40px;
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.blood-donation-tips .tips-section h2 {
+  color: #333;
+  border-left: 5px solid var(--primary-color);
+  padding-left: 15px;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+.blood-donation-tips .tip-card {
+  display: flex;
+  margin-bottom: 25px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.blood-donation-tips .tip-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.blood-donation-tips .tip-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.blood-donation-tips .tip-icon i {
+  font-size: 1.8rem;
+}
+
+.blood-donation-tips .tip-content {
+  flex: 1;
+}
+
+.blood-donation-tips .tip-content h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.4rem;
+  color: var(--primary-color);
+}
+
+.blood-donation-tips .tip-content p {
+  margin: 0;
+  color: #555;
+  line-height: 1.6;
+}
+
+.blood-donation-tips .donation-benefits {
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.blood-donation-tips .donation-benefits h2 {
+  color: #333;
+  border-left: 5px solid var(--primary-color);
+  padding-left: 15px;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+.blood-donation-tips .donation-benefits ul {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.blood-donation-tips .donation-benefits li {
+  color: #555;
+  margin-bottom: 10px;
+  position: relative;
+  padding-left: 15px;
+  line-height: 1.6;
+}
+
+.blood-donation-tips .donation-benefits li:before {
+  content: '•';
+  color: var(--primary-color);
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+@media (max-width: 768px) {
+  .blood-donation-tips .tip-card {
+    flex-direction: column;
+  }
+  
+  .blood-donation-tips .tip-icon {
+    margin-bottom: 15px;
+    margin-right: 0;
+  }
+  
+  .blood-donation-tips .page-title {
+    font-size: 2rem;
+  }
+  
+  .blood-donation-tips .tips-section h2,
+  .blood-donation-tips .donation-benefits h2 {
+    font-size: 1.5rem;
+  }
+}

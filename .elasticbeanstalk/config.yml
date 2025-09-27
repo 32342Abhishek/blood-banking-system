@@ -1,0 +1,45 @@
+option_settings:
+  aws:elasticbeanstalk:container:tomcat:jvmoptions:
+    Xms: 512m
+    Xmx: 1024m
+    JVM Options: -Dspring.profiles.active=production
+
+  aws:elasticbeanstalk:application:environment:
+    SPRING_PROFILES_ACTIVE: production
+    SPRING_DATASOURCE_URL: jdbc:mysql://${RDS_HOSTNAME}:${RDS_PORT}/${RDS_DB_NAME}
+    SPRING_DATASOURCE_USERNAME: ${RDS_USERNAME}
+    SPRING_DATASOURCE_PASSWORD: ${RDS_PASSWORD}
+
+  aws:autoscaling:launchconfiguration:
+    InstanceType: t2.micro
+    IamInstanceProfile: aws-elasticbeanstalk-ec2-role
+
+  aws:autoscaling:asg:
+    MinSize: 1
+    MaxSize: 4
+
+  aws:elasticbeanstalk:environment:
+    LoadBalancerType: application
+    ServiceRole: aws-elasticbeanstalk-service-role
+
+files:
+  "/etc/nginx/conf.d/cors.conf":
+    mode: "000644"
+    owner: root
+    group: root
+    content: |
+      # CORS configuration
+      location / {
+          if ($request_method = 'OPTIONS') {
+              add_header 'Access-Control-Allow-Origin' '*';
+              add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE';
+              add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
+              add_header 'Access-Control-Max-Age' 1728000;
+              add_header 'Content-Type' 'text/plain; charset=utf-8';
+              add_header 'Content-Length' 0;
+              return 204;
+          }
+          add_header 'Access-Control-Allow-Origin' '*';
+          add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE';
+          add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
+      }

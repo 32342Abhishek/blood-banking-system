@@ -1,0 +1,60 @@
+# IDE and Editor files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+.DS_Store
+
+# Build directories
+target/
+dist/
+node_modules/
+build/
+out/
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+
+# Eclipse files
+.metadata/
+.settings/
+.classpath
+.project
+bin/
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Docker
+docker-compose.override.yml
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.class
+
+# BloodBank-specific
+BloodBackend/target/
+BloodBackend/.settings/
+
+# Testing
+*.test.js
+*.spec.js
+coverage/

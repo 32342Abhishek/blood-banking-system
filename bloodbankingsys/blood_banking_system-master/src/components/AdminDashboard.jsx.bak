@@ -1,0 +1,998 @@
+﻿import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "./AuthContext";
+import DonationsManagement from "./DonationsManagement";
+import RequestsManagement from "./RequestsManagement";
+im  const fetchNotif  const fetchNotifications = async () => {
+    try {
+      // Import the API utilities
+      const { apiGet, ENDPOINTS } = await import('../utils/api');
+      
+      console.log("Fetching notifications using API utilities...");
+      const data = await apiGet(ENDPOINTS.EMERGENCY_NOTIFICATIONS);
+      console.log(`Successfully fetched ${data.length} notifications`);
+      setNotifications(data);
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+      setError("Failed to load notifications data");
+      
+      // Handle authentication errors
+      if (err.message.includes('Authentication failed')) {
+        navigate('/admin-login');
+      }
+    }
+  };=> {
+    try {
+      // Import the API utilities
+      const { apiGet, ENDPOINTS } = await import('../utils/api');
+      
+      console.log("Fetching notifications using API utilities...");
+      const data = await apiGet(ENDPOINTS.EMERGENCY_NOTIFICATIONS);
+      console.log(`Successfully fetched ${data.length} notifications`);
+      setNotifications(data);
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+      setError("Failed to load notifications data");
+      
+      // Handle authentication errors
+      if (err.message.includes('Authentication failed')) {
+        navigate('/admin-login');
+      }
+    }
+  };ement from "./BloodStockManagement";
+import NotificationsSystem from "./NotificationsSystem";
+import ReportsSection from "./ReportsSection";
+import DataManagement from "./DataManagement";
+import "./AdminDashboard.css";
+
+const AdminDashboard = () => {
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [bloodInventory, setBloodInventory] = useState({});
+  const [appointments, setAppointments] = useState([]);
+  const [donors, setDonors] = useState([]);
+  const [pendingDonors, setPendingDonors] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    donors: { page: 1, itemsPerPage: 5 },
+    pendingDonors: { page: 1, itemsPerPage: 5 },
+    requests: { page: 1, itemsPerPage: 5 },
+    pendingRequests: { page: 1, itemsPerPage: 5 },
+    appointments: { page: 1, itemsPerPage: 5 },
+    notifications: { page: 1, itemsPerPage: 5 }
+  });
+  const [sorting, setSorting] = useState({
+    donors: { field: null, direction: 'asc' },
+    pendingDonors: { field: null, direction: 'asc' },
+    requests: { field: null, direction: 'asc' },
+    pendingRequests: { field: null, direction: 'asc' },
+    appointments: { field: null, direction: 'asc' },
+    notifications: { field: null, direction: 'asc' }
+  });
+  const [filters, setFilters] = useState({
+    donors: '',
+    pendingDonors: '',
+    requests: '',
+    pendingRequests: '',
+    appointments: '',
+    notifications: ''
+  });
+  const [successMessage, setSuccessMessage] = useState("");
+  const [stats, setStats] = useState({
+    totalDonations: 0,
+    pendingDonations: 0,
+    approvedDonations: 0,
+    rejectedDonations: 0,
+    totalRequests: 0,
+    pendingRequests: 0,
+    approvedRequests: 0,
+    rejectedRequests: 0,
+    totalDonors: 0,
+    totalAppointments: 0,
+    criticalInventory: 0,
+    notificationsSent: 0
+  });
+  
+  const { user, loggedIn } = useContext(AuthContext);
+  const navigate = useNavigate();
+  
+  const getCurrentTime = () => {
+    const hours = new Date().getHours();
+    if (hours < 12) return "morning";
+    if (hours < 17) return "afternoon";
+    return "evening";
+  };
+  
+  const handleSort = (type, field) => {
+    setSorting(prev => {
+      // If clicking on the same field, toggle direction
+      const direction = prev[type].field === field && prev[type].direction === 'asc' ? 'desc' : 'asc';
+      return { ...prev, [type]: { field, direction } };
+    });
+  };
+
+  useEffect(() => {
+    // Check if user is logged in and has admin role
+    if (!loggedIn || user?.role !== 'ADMIN') {
+      console.log('User not authorized as admin, redirecting to login');
+      navigate('/admin-login');
+      return;
+    }
+    
+    // Verify token exists in localStorage
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No auth token found, redirecting to login');
+      navigate('/admin-login');
+      return;
+    }
+    
+    console.log('Admin authenticated, loading dashboard data');
+    
+    // Fetch initial data
+    fetchBloodInventory();
+    fetchAppointments();
+    fetchDonors();
+    fetchPendingDonors();
+    fetchRequests();
+    fetchPendingRequests();
+    fetchNotifications();
+    calculateStats();
+  }, [loggedIn, user, navigate]);
+
+  const fetchBloodInventory = async () => {
+    try {
+      // Import the API utilities
+      const { apiGet, ENDPOINTS } = await import('../utils/api');
+      
+      // Use apiGet utility which handles authentication headers
+      const data = await apiGet(ENDPOINTS.INVENTORY_STOCK);
+      setBloodInventory(data);
+    } catch (err) {
+      console.error("Error fetching blood inventory:", err);
+      setError("Failed to load blood inventory data");
+      
+      // Handle authentication errors
+      if (err.message.includes('Authentication failed')) {
+        navigate('/admin-login');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const updateStock = async (updates) => {
+    try {
+      setLoading(true);
+      
+      // Import the API utilities
+      const { apiPut, ENDPOINTS } = await import('../utils/api');
+      
+      // Use apiPut utility which handles authentication headers
+      await apiPut(ENDPOINTS.BLOOD_INVENTORY + '/update', updates);
+      
+      // Refresh inventory data
+      fetchBloodInventory();
+      calculateStats();
+      setSuccessMessage("Blood inventory updated successfully");
+    } catch (err) {
+      console.error("Error updating blood inventory:", err);
+      setError("Failed to update blood inventory");
+      
+      // Handle authentication errors
+      if (err.message.includes('Authentication failed')) {
+        navigate('/admin-login');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAppointments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication token not found. Please log in again.");
+      }
+      
+      const response = await fetch("http://localhost:8081/api/appointments", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error("Failed to fetch appointments");
+      const data = await response.json();
+      setAppointments(data);
+    } catch (err) {
+      console.error("Error fetching appointments:", err);
+      setError("Failed to load appointments data");
+    }
+  };
+
+  const fetchDonors = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication token not found. Please log in again.");
+      }
+      
+      console.log("Fetching donors with token:", token.substring(0, 20) + "...");
+      
+      const response = await fetch("http://localhost:8081/api/donors", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        mode: 'cors',
+        credentials: 'include'
+      });
+      
+      console.log("Donors API response status:", response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server error response:", errorText);
+        throw new Error(`Failed to fetch donors: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Successfully fetched ${data.length} donors`);
+      setDonors(data);
+    } catch (err) {
+      console.error("Error fetching donors:", err);
+      setError("Failed to load donors data: " + (err.message || "Unknown error"));
+    }
+  };
+
+  const fetchRequests = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication token not found. Please log in again.");
+      }
+      
+      const response = await fetch("http://localhost:8081/api/blood-requests", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error("Failed to fetch blood requests");
+      const data = await response.json();
+      setRequests(data);
+    } catch (err) {
+      console.error("Error fetching blood requests:", err);
+      setError("Failed to load blood requests data");
+    }
+  };
+  
+  const fetchPendingDonors = async () => {
+    try {
+      // Import the API utilities
+      const { apiGet, ENDPOINTS } = await import('../utils/api');
+      
+      console.log("Fetching pending donors using API utilities...");
+      const data = await apiGet(ENDPOINTS.BLOOD_DONATIONS + '/pending');
+      console.log(`Successfully fetched ${data.length} pending donors`);
+      setPendingDonors(data);
+    } catch (err) {
+      console.error("Error fetching pending donors:", err);
+      setError("Failed to load pending donors data");
+      
+      // Handle authentication errors
+      if (err.message.includes('Authentication failed')) {
+        navigate('/admin-login');
+      }
+    }
+  };
+  
+  const fetchPendingRequests = async () => {
+    try {
+      // Import the API utilities
+      const { apiGet, ENDPOINTS } = await import('../utils/api');
+      
+      console.log("Fetching pending requests using API utilities...");
+      const data = await apiGet(ENDPOINTS.BLOOD_REQUESTS + '/pending');
+      console.log(`Successfully fetched ${data.length} pending requests`);
+      setPendingRequests(data);
+    } catch (err) {
+      console.error("Error fetching pending requests:", err);
+      setError("Failed to load pending requests data");
+      
+      // Handle authentication errors
+      if (err.message.includes('Authentication failed')) {
+        navigate('/admin-login');
+      }
+    }
+  };
+  
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication token not found. Please log in again.");
+      }
+      
+      const response = await fetch("http://localhost:8081/api/notifications", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error("Failed to fetch notifications");
+      const data = await response.json();
+      setNotifications(data);
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+      // Not setting error for notifications as it's not critical
+    }
+  };
+  
+  const deleteNotification = async (id) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:8081/api/notifications/${id}`, {
+        method: "DELETE"
+      });
+      
+      if (!response.ok) throw new Error("Failed to delete notification");
+      
+      // Update notifications list
+      fetchNotifications();
+      calculateStats();
+      setSuccessMessage("Notification deleted successfully");
+    } catch (err) {
+      console.error("Error deleting notification:", err);
+      setError("Failed to delete notification");
+    } finally {
+      setLoading(false);
+    }
+  };  const approveDonation = async (id) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8081/api/blood-donations/${id}/approve`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      if (!response.ok) throw new Error("Failed to approve donation");
+      
+      // Update UI after successful approval
+      fetchPendingDonors();
+      fetchDonors();
+      fetchBloodInventory(); // Blood inventory should update after donation approval
+      calculateStats();
+      setSuccessMessage("Donation approved successfully");
+      
+      // Send notification to donor
+      sendNotification(id, "DONATION_APPROVED", "Your blood donation has been approved. Thank you for your contribution!");
+      
+    } catch (err) {
+      console.error("Error approving donation:", err);
+      setError("Failed to approve donation");
+    }
+  };
+  
+  const rejectDonation = async (id, reason) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8081/api/blood-donations/${id}/reject`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ reason }),
+        }
+      );
+      
+      if (!response.ok) throw new Error("Failed to reject donation");
+      
+      // Update UI after successful rejection
+      fetchPendingDonors();
+      fetchDonors();
+      calculateStats();
+      setSuccessMessage("Donation rejected");
+      
+      // Send notification to donor with reason
+      sendNotification(id, "DONATION_REJECTED", `Your blood donation was rejected. Reason: ${reason}`);
+      
+    } catch (err) {
+      console.error("Error rejecting donation:", err);
+      setError("Failed to reject donation");
+    }
+  };
+  
+  const approveRequest = async (id) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8081/api/blood-requests/${id}/approve`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      if (!response.ok) throw new Error("Failed to approve blood request");
+      
+      // Update UI after successful approval
+      fetchPendingRequests();
+      fetchRequests();
+      fetchBloodInventory(); // Blood inventory should update after request approval
+      calculateStats();
+      setSuccessMessage("Blood request approved successfully");
+      
+      // Send notification to requester
+      sendNotification(id, "REQUEST_APPROVED", "Your blood request has been approved and is being processed.");
+      
+    } catch (err) {
+      console.error("Error approving blood request:", err);
+      setError("Failed to approve blood request");
+    }
+  };
+  
+  const rejectRequest = async (id, reason) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8081/api/blood-requests/${id}/reject`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ reason }),
+        }
+      );
+      
+      if (!response.ok) throw new Error("Failed to reject blood request");
+      
+      // Update UI after successful rejection
+      fetchPendingRequests();
+      fetchRequests();
+      calculateStats();
+      setSuccessMessage("Blood request rejected");
+      
+      // Send notification to requester with reason
+      sendNotification(id, "REQUEST_REJECTED", `Your blood request was rejected. Reason: ${reason}`);
+      
+    } catch (err) {
+      console.error("Error rejecting blood request:", err);
+      setError("Failed to reject blood request");
+    }
+  };
+  
+  const sendNotification = async (notificationData) => {
+    try {
+      setLoading(true);
+      
+      // Support both old and new notification formats
+      let payload;
+      if (typeof notificationData === 'object' && notificationData.title) {
+        // New format from NotificationsSystem
+        payload = {
+          title: notificationData.title,
+          message: notificationData.message,
+          recipientType: notificationData.recipientType,
+          recipientId: notificationData.recipientId,
+          priority: notificationData.priority,
+          bloodGroup: notificationData.bloodGroup,
+          status: "UNREAD"
+        };
+      } else {
+        // Old format (recipientId, type, message)
+        const [recipientId, type, message] = arguments;
+        payload = {
+          recipientId,
+          type,
+          message,
+          status: "UNREAD"
+        };
+      }
+      
+      const response = await fetch(
+        `http://localhost:8081/api/notifications`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      
+      if (!response.ok) throw new Error("Failed to send notification");
+      
+      // Update notifications list
+      fetchNotifications();
+      calculateStats();
+      setSuccessMessage("Notification sent successfully");
+    } catch (err) {
+      console.error("Error sending notification:", err);
+      setError("Failed to send notification");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const updateAppointmentStatus = async (id, status) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8081/api/appointments/${id}/status?status=${status}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      if (!response.ok) throw new Error("Failed to update appointment");
+      
+      // Refresh appointments data
+      fetchAppointments();
+      calculateStats();
+    } catch (err) {
+      console.error("Error updating appointment:", err);
+      alert("Failed to update appointment status");
+    }
+  };
+
+  const updateRequestStatus = async (id, status) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8081/api/blood-requests/${id}/status?status=${status}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      if (!response.ok) throw new Error("Failed to update blood request");
+      
+      // Refresh blood requests data
+      fetchRequests();
+      calculateStats();
+    } catch (err) {
+      console.error("Error updating blood request:", err);
+      alert("Failed to update blood request status");
+    }
+  };
+  
+  const calculateStats = () => {
+    // Donations stats
+    const pendingDonationsCount = pendingDonors.length;
+    const approvedDonationsCount = donors.filter(donor => donor.status === "APPROVED").length;
+    const rejectedDonationsCount = donors.filter(donor => donor.status === "REJECTED").length;
+    const totalDonationsCount = approvedDonationsCount + rejectedDonationsCount + pendingDonationsCount;
+    
+    // Request stats
+    const pendingRequestsCount = pendingRequests.length;
+    const approvedRequestsCount = requests.filter(req => req.status === "APPROVED").length;
+    const rejectedRequestsCount = requests.filter(req => req.status === "REJECTED").length;
+    const totalRequestsCount = approvedRequestsCount + rejectedRequestsCount + pendingRequestsCount;
+    
+    // Count total donors (unique donors)
+    const uniqueDonorIds = new Set(donors.map(donor => donor.userId));
+    const donorsCount = uniqueDonorIds.size;
+    
+    // Count critical inventory (less than 5 units)
+    const criticalCount = Object.values(bloodInventory).filter(units => units < 5).length;
+    
+    // Count total appointments
+    const appointmentsCount = appointments.length;
+    
+    // Count notifications sent
+    const notificationsSentCount = notifications.length;
+    
+    setStats({
+      totalDonations: totalDonationsCount,
+      pendingDonations: pendingDonationsCount,
+      approvedDonations: approvedDonationsCount,
+      rejectedDonations: rejectedDonationsCount,
+      totalRequests: totalRequestsCount,
+      pendingRequests: pendingRequestsCount,
+      approvedRequests: approvedRequestsCount,
+      rejectedRequests: rejectedRequestsCount,
+      totalDonors: donorsCount,
+      totalAppointments: appointmentsCount,
+      criticalInventory: criticalCount,
+      notificationsSent: notificationsSentCount
+    });
+  };
+  
+  const renderDashboardTab = () => {
+    return (
+      <div className="dashboard-container">
+        <div className="admin-header">
+          <h3 className="admin-greeting">Good {getCurrentTime()}, {user?.name || 'Admin'}</h3>
+          <div className="admin-date">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+        </div>
+        
+        <div className="dashboard-summary">
+          <div className="summary-card">
+            <h3>Total Donations</h3>
+            <div className="summary-value">{stats.totalDonations}</div>
+            <div className="summary-change">â†‘ 12% from last month</div>
+          </div>
+          
+          <div className="summary-card">
+            <h3>Pending Requests</h3>
+            <div className="summary-value">{stats.pendingRequests}</div>
+            <div className="summary-change">Needs attention</div>
+          </div>
+          
+          <div className="summary-card">
+            <h3>Registered Donors</h3>
+            <div className="summary-value">{stats.totalDonors}</div>
+            <div className="summary-change">â†‘ 5% from last month</div>
+          </div>
+          
+          <div className="summary-card">
+            <h3>Critical Inventory</h3>
+            <div className="summary-value">{stats.criticalInventory}</div>
+            <div className={stats.criticalInventory > 0 ? "summary-change negative" : "summary-change"}>
+              {stats.criticalInventory > 0 ? 'Blood types need attention' : 'All stock levels healthy'}
+            </div>
+          </div>
+        </div>
+        
+        <div className="inventory-section">
+          <div className="inventory-header">
+            <h3>Blood Inventory Overview</h3>
+            <button className="action-button" onClick={() => setActiveTab("inventory")}>
+              View Full Inventory
+            </button>
+          </div>
+          <div className="inventory-grid">
+            {Object.entries(bloodInventory).map(([bloodGroup, units]) => (
+              <div key={bloodGroup} className="inventory-card">
+                <h4>{bloodGroup}</h4>
+                <div className={`units ${units < 5 ? "low-stock" : ""}`}>
+                  {units}
+                </div>
+                <div className="units-label">units available</div>
+                {units < 5 && <div className="badge critical">Critical</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="recent-section">
+          <div className="inventory-header">
+            <h3>Recent Requests</h3>
+            <button className="action-button" onClick={() => setActiveTab("requests")}>
+              View All Requests
+            </button>
+          </div>
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Blood Group</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {requests.slice(0, 5).map((request) => (
+                  <tr key={request.id}>
+                    <td>{request.name}</td>
+                    <td>{request.bloodGroup}</td>
+                    <td>{request.location}</td>
+                    <td>
+                      <span className={`status ${request.requestStatus.toLowerCase()}`}>
+                        {request.requestStatus}
+                      </span>
+                    </td>
+                    <td>
+                      {request.requestStatus === "PENDING" && (
+                        <>
+                          <button
+                            className="action-button fulfill"
+                            onClick={() => updateRequestStatus(request.id, "FULFILLED")}
+                          >
+                            Fulfill
+                          </button>
+                          <button
+                            className="action-button cancel"
+                            onClick={() => updateRequestStatus(request.id, "CANCELLED")}
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // BloodStockManagement component now handles blood inventory
+
+  const renderAppointmentsTab = () => {
+    return (
+      <div className="appointments-container">
+        <div className="inventory-header">
+          <h3>Scheduled Appointments</h3>
+          <button className="action-button" onClick={() => navigate("/schedule-appointment")}>
+            + New Appointment
+          </button>
+        </div>
+        {appointments.length === 0 ? (
+          <p>No appointments scheduled.</p>
+        ) : (
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Donor Name</th>
+                  <th>Blood Group</th>
+                  <th>Date & Time</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {appointments
+                  .filter(app => app.status === "SCHEDULED")
+                  .map((appointment) => (
+                    <tr key={appointment.id}>
+                      <td>{appointment.donor.name}</td>
+                      <td>{appointment.donor.bloodGroup}</td>
+                      <td>
+                        {new Date(appointment.appointmentDate).toLocaleString()}
+                      </td>
+                      <td>{appointment.location}</td>
+                      <td>
+                        <span className={`status ${appointment.status.toLowerCase()}`}>
+                          {appointment.status}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className="action-button complete"
+                          onClick={() => updateAppointmentStatus(appointment.id, "COMPLETED")}
+                        >
+                          Complete
+                        </button>
+                        <button
+                          className="action-button cancel"
+                          onClick={() => updateAppointmentStatus(appointment.id, "CANCELLED")}
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderDonorsTab = () => {
+    return (
+      <div className="donors-container">
+        <div className="inventory-header">
+          <h3>Registered Donors</h3>
+          <button className="action-button" onClick={() => navigate("/add-donor")}>
+            + Add Donor
+          </button>
+        </div>
+        {donors.length === 0 ? (
+          <p>No donors registered.</p>
+        ) : (
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Blood Group</th>
+                  <th>Phone</th>
+                  <th>Location</th>
+                  <th>Available</th>
+                  <th>Last Donation</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {donors.map((donor) => (
+                  <tr key={donor.id}>
+                    <td>{donor.name}</td>
+                    <td>{donor.bloodGroup}</td>
+                    <td>{donor.phone}</td>
+                    <td>{donor.location}</td>
+                    <td>
+                      <span className={donor.available ? "available" : "unavailable"}>
+                        {donor.available ? "Yes" : "No"}
+                      </span>
+                    </td>
+                    <td>
+                      {donor.lastDonation 
+                        ? new Date(donor.lastDonation).toLocaleDateString()
+                        : "Never"}
+                    </td>
+                    <td>
+                      <button className="action-button" onClick={() => navigate(`/donor-details/${donor.id}`)}>
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // RequestsManagement component now handles blood requests
+
+  return (
+    <div className="admin-dashboard">
+      <h2>Blood Bank Administration</h2>
+      
+      <div className="dashboard-tabs">
+        <button 
+          className={activeTab === "dashboard" ? "active" : ""} 
+          onClick={() => setActiveTab("dashboard")}
+        >
+          Dashboard
+        </button>
+        <button 
+          className={activeTab === "inventory" ? "active" : ""} 
+          onClick={() => setActiveTab("inventory")}
+        >
+          Blood Inventory
+        </button>
+        <button 
+          className={activeTab === "appointments" ? "active" : ""} 
+          onClick={() => setActiveTab("appointments")}
+        >
+          Appointments
+        </button>
+        <button 
+          className={activeTab === "donors" ? "active" : ""} 
+          onClick={() => setActiveTab("donors")}
+        >
+          Donors
+        </button>
+        <button 
+          className={activeTab === "donations" ? "active" : ""} 
+          onClick={() => setActiveTab("donations")}
+        >
+          Donations
+        </button>
+        <button 
+          className={activeTab === "requests" ? "active" : ""} 
+          onClick={() => setActiveTab("requests")}
+        >
+          Blood Requests
+        </button>
+        <button 
+          className={activeTab === "analytics" ? "active" : ""} 
+          onClick={() => setActiveTab("analytics")}
+        >
+          Donor Analytics
+        </button>
+        <button 
+          className={activeTab === "notifications" ? "active" : ""} 
+          onClick={() => setActiveTab("notifications")}
+        >
+          Emergency Alerts
+        </button>
+        <button 
+          className={activeTab === "reports" ? "active" : ""} 
+          onClick={() => setActiveTab("reports")}
+        >
+          Reports
+        </button>
+        <button 
+          className={activeTab === "data-management" ? "active" : ""} 
+          onClick={() => setActiveTab("data-management")}
+        >
+          Data Management
+        </button>
+      </div>
+      
+      <div className="tab-content">
+        {activeTab === "dashboard" && renderDashboardTab()}
+        {activeTab === "inventory" && (
+          <BloodStockManagement
+            bloodInventory={bloodInventory}
+            onUpdateStock={updateStock}
+            loading={loading}
+            error={error}
+            successMessage={successMessage}
+          />
+        )}
+        {activeTab === "appointments" && renderAppointmentsTab()}
+        {activeTab === "donors" && renderDonorsTab()}
+        {activeTab === "donations" && (
+          <DonationsManagement 
+            pendingDonations={pendingDonors}
+            approvedDonations={donors.filter(d => d.status === "APPROVED")}
+            rejectedDonations={donors.filter(d => d.status === "REJECTED")}
+            onApprove={approveDonation}
+            onReject={rejectDonation}
+            stats={stats}
+            loading={loading}
+            error={error}
+            successMessage={successMessage}
+          />
+        )}
+        {activeTab === "requests" && (
+          <RequestsManagement 
+            pendingRequests={pendingRequests}
+            approvedRequests={requests.filter(r => r.status === "APPROVED")}
+            rejectedRequests={requests.filter(r => r.status === "REJECTED")}
+            bloodInventory={bloodInventory}
+            onApprove={approveRequest}
+            onReject={rejectRequest}
+            stats={stats}
+            loading={loading}
+            error={error}
+            successMessage={successMessage}
+          />
+        )}
+        {activeTab === "reports" && (
+          <ReportsSection 
+            stats={stats}
+            bloodInventory={bloodInventory}
+            appointments={appointments}
+            donors={donors}
+            requests={requests}
+            loading={loading}
+            error={error}
+          />
+        )}
+        {activeTab === "analytics" && (
+          <div className="tab-content">
+            <div className="redirect-message">
+              <h3>Redirecting to Donor Analytics...</h3>
+              <p>Please wait while we redirect you to the full analytics dashboard.</p>
+              {window.location.href = "/donor-analytics"}
+            </div>
+          </div>
+        )}
+        {activeTab === "notifications" && (
+          <NotificationsSystem
+            notifications={notifications}
+            onSendNotification={sendNotification}
+            onDeleteNotification={deleteNotification}
+            loading={loading}
+            error={error}
+            successMessage={successMessage}
+          />
+        )}
+        {activeTab === "data-management" && (
+          <DataManagement />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Blood drop background circle -->
+  <circle cx="60" cy="60" r="58" fill="#f2dbc9" />
+
+  <!-- Blood drop shape -->
+  <path d="M60 20C60 20 40 45 40 70C40 82.5 48.5 95 60 95C71.5 95 80 82.5 80 70C80 45 60 20 60 20Z" fill="#b30000" />
+  
+  <!-- Reflection highlight -->
+  <path d="M48 35C48 35 42 50 42 65C42 72 45 77 50 80C45 65 50 45 55 35C50 32 48 35 48 35Z" fill="#ff6b6b" opacity="0.6" />
+</svg>

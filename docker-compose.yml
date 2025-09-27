@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./BloodBackend
+      dockerfile: Dockerfile
+    container_name: blood-bank-backend
+    restart: always
+    ports:
+      - "8082:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/bloodbank?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Abhishek
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_SHOW_SQL=true
+      - SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=true
+      - SERVER_PORT=8081
+      - JWT_SECRET=secretKey0123456789abcdefghijklmnopqrstuvwxyz
+      - JWT_EXPIRATION_MS=86400000
+    networks:
+      - blood-bank-network
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./bloodbankingsys/blood_banking_system-master
+      dockerfile: Dockerfile
+    container_name: blood-bank-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    environment:
+      - API_BASE_URL=http://backend:8081/api
+    networks:
+      - blood-bank-network
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:8.0
+    container_name: blood-bank-mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=Abhishek
+      - MYSQL_DATABASE=bloodbank
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - blood-bank-network
+    command: --default-authentication-plugin=mysql_native_password
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE to avoid MySQL "mbind: Operation not permitted" errors
+
+networks:
+  blood-bank-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local

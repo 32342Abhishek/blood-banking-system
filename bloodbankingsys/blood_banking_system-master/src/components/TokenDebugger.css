@@ -1,0 +1,58 @@
+.token-debugger h2 {
+  margin-bottom: 0.5rem;
+}
+
+.token-display {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-height: 120px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.token-payload {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.test-result {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.token-debugger .card {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.token-debugger .card-header {
+  font-weight: bold;
+  background-color: #f1f8ff;
+}
+
+.token-debugger ul li {
+  margin-bottom: 0.5rem;
+}

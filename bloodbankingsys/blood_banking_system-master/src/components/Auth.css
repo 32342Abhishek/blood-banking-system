@@ -1,0 +1,197 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 240, 240, 0.9), rgba(255, 255, 255, 0.95)), 
+              url('/donation3.jpg') no-repeat center center fixed;
+  background-size: cover;
+  padding: 2rem;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.auth-card {
+  display: flex;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  min-height: 550px;
+  background: #fff;
+}
+
+.auth-card-left {
+  flex: 1;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  padding: 3rem;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.auth-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.auth-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+}
+
+.auth-brand h1 {
+  font-size: 2rem;
+  margin: 0;
+  font-weight: 700;
+  color: white;
+}
+
+.auth-message {
+  margin-top: auto;
+}
+
+.auth-message h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.auth-message p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.auth-card-right {
+  flex: 1;
+  padding: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-form h2 {
+  font-size: 1.75rem;
+  margin-bottom: 2rem;
+  color: var(--text-dark);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.form-group input, 
+.form-group select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(210, 29, 43, 0.1);
+  outline: none;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+  background: var(--primary-dark);
+}
+
+.btn-submit:disabled {
+  background: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.auth-error {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--danger-color);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.auth-footer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.auth-footer p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.auth-footer a {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .auth-card {
+    flex-direction: column;
+  }
+  
+  .auth-card-left {
+    padding: 2rem;
+  }
+  
+  .auth-brand {
+    margin-bottom: 1rem;
+  }
+  
+  .auth-message {
+    margin-top: 1rem;
+  }
+  
+  .auth-message h2 {
+    font-size: 2rem;
+  }
+  
+  .auth-card-right {
+    padding: 2rem;
+  }
+}

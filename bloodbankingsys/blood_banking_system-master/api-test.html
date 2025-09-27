@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #d9534f;
+        }
+        .test-group {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px 0;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Blood Bank API Test</h1>
+    <p>Use this tool to test the Blood Bank API endpoints and diagnose authentication issues.</p>
+
+    <div class="test-group">
+        <div class="test-title">1. Check Server Status</div>
+        <button onclick="checkServerStatus()">Test Health Endpoint</button>
+        <div id="health-result" class="result"></div>
+    </div>
+
+    <div class="test-group">
+        <div class="test-title">2. Login</div>
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" value="admin@example.com">
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" value="admin123">
+        </div>
+        <div>
+            <label for="login-type">Login Type:</label>
+            <select id="login-type">
+                <option value="regular">Regular Login</option>
+                <option value="admin">Admin Login</option>
+            </select>
+        </div>
+        <button onclick="attemptLogin()">Login</button>
+        <div id="login-result" class="result"></div>
+    </div>
+
+    <div class="test-group">
+        <div class="test-title">3. Test Protected Endpoint</div>
+        <div>
+            <label for="endpoint">Endpoint:</label>
+            <select id="endpoint">
+                <option value="/blood-inventory/stock">Blood Inventory Stock</option>
+                <option value="/blood-donations/pending">Pending Donations</option>
+                <option value="/blood-requests/pending">Pending Requests</option>
+                <option value="/notifications">Notifications</option>
+                <option value="/donors">Donors</option>
+                <option value="/appointments">Appointments</option>
+            </select>
+        </div>
+        <button onclick="testProtectedEndpoint()">Test Endpoint</button>
+        <div id="api-result" class="result"></div>
+    </div>
+
+    <div class="test-group">
+        <div class="test-title">4. Authentication Info</div>
+        <button onclick="checkAuthStatus()">Check Auth Status</button>
+        <div id="auth-status" class="result"></div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8081/api';
+        let authToken = localStorage.getItem('token');
+        
+        // Function to display results
+        function displayResult(elementId, success, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = success ? 'result success' : 'result error';
+        }
+        
+        // 1. Check Server Status
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${BASE_URL}/health`);
+                const data = await response.json();
+                displayResult('health-result', true, `Server is ${data.status}\nMessage: ${data.message}\nTimestamp: ${data.timestamp}`);
+            } catch (error) {
+                displayResult('health-result', false, `Error: ${error.message}`);
+            }
+        }
+        
+        // 2. Login
+        async function attemptLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginType = document.getElementById('login-type').value;
+            
+            try {
+                const endpoint = loginType === 'admin' ? '/auth/admin/login' : '/auth/login';
+                console.log(`Attempting ${loginType} login at endpoint: ${endpoint}`);
+                
+                const response = await fetch(`${BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password }),
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+                
+                console.log('Login response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Login failed: ${response.status} ${response.statusText}\nDetails: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                authToken = data.token;
+                localStorage.setItem('token', authToken);
+                localStorage.setItem('userId', data.userId);
+                localStorage.setItem('userName', data.name);
+                localStorage.setItem('userRole', data.role);
+                
+                displayResult('login-result', true, `Login successful!\nToken: ${authToken.substring(0, 20)}...\nUser: ${data.name}\nRole: ${data.role}`);
+            } catch (error) {
+                displayResult('login-result', false, `Error: ${error.message}`);
+            }
+        }
+        
+        // 3. Test Protected Endpoint
+        async function testProtectedEndpoint() {
+            const endpoint = document.getElementById('endpoint').value;
+            try {
+                authToken = localStorage.getItem('token');
+                if (!authToken) {
+                    throw new Error('No authentication token found. Please login first.');
+                }
+                
+                console.log(`Testing endpoint: ${endpoint}`);
+                console.log(`Using token: ${authToken.substring(0, 20)}...`);
+                
+                const headers = {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                };
+                
+                console.log('Request headers:', headers);
+                
+                const response = await fetch(`${BASE_URL}${endpoint}`, {
+                    headers,
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+                
+                console.log('API response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API request failed: ${response.status} ${response.statusText}\nDetails: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                const dataPreview = Array.isArray(data) 
+                    ? `Received ${data.length} items\nFirst item: ${JSON.stringify(data[0], null, 2)}`
+                    : JSON.stringify(data, null, 2);
+                
+                displayResult('api-result', true, `Success!\n${dataPreview}`);
+            } catch (error) {
+                displayResult('api-result', false, `Error: ${error.message}`);
+            }
+        }
+        
+        // 4. Authentication Info
+        function checkAuthStatus() {
+            try {
+                const token = localStorage.getItem('token');
+                const userId = localStorage.getItem('userId');
+                const userName = localStorage.getItem('userName');
+                const userRole = localStorage.getItem('userRole');
+                
+                if (!token) {
+                    displayResult('auth-status', false, 'No authentication information found in localStorage');
+                    return;
+                }
+                
+                const tokenInfo = parseJwt(token);
+                const expiryDate = new Date(tokenInfo.exp * 1000);
+                const isExpired = expiryDate < new Date();
+                
+                displayResult('auth-status', !isExpired, 
+                    `Token: ${token.substring(0, 20)}...\n` +
+                    `Token Length: ${token.length}\n` +
+                    `User ID: ${userId}\n` +
+                    `User Name: ${userName}\n` +
+                    `User Role: ${userRole}\n` +
+                    `Token Subject: ${tokenInfo.sub}\n` +
+                    `Token Expiry: ${expiryDate.toLocaleString()}\n` +
+                    `Token Status: ${isExpired ? 'EXPIRED' : 'VALID'}`
+                );
+            } catch (error) {
+                displayResult('auth-status', false, `Error parsing token: ${error.message}`);
+            }
+        }
+        
+        // Parse JWT Token
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join('')
+                );
+                return JSON.parse(jsonPayload);
+            } catch (error) {
+                console.error("Error parsing JWT", error);
+                return { error: "Invalid token format" };
+            }
+        }
+        
+        // Check for token on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (authToken) {
+                document.getElementById('auth-status').textContent = `Existing token found: ${authToken.substring(0, 20)}...`;
+            }
+        });
+    </script>
+</body>
+</html>

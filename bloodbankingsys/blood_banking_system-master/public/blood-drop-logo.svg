@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Circular background -->
+  <circle cx="100" cy="100" r="90" fill="#f2dbc9" />
+  
+  <!-- Blood drop -->
+  <path d="M100 40 C100 40 60 90 60 140 C60 166 78 180 100 180 C122 180 140 166 140 140 C140 90 100 40 100 40 Z" fill="#b30000" />
+  
+  <!-- Highlight/reflection -->
+  <path d="M80 70 C80 70 70 100 70 130 C70 145 75 155 85 160 C75 130 85 90 95 70 C85 65 80 70 80 70 Z" fill="#ff6b6b" opacity="0.6" />
+</svg>

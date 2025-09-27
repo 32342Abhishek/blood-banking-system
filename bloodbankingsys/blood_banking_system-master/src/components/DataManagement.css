@@ -1,0 +1,59 @@
+.data-management-container {
+  padding: 20px;
+}
+
+.data-management-container h2 {
+  color: #d32f2f;
+  margin-bottom: 10px;
+}
+
+.data-management-container .card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.data-management-container .card-title {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.data-management-container .nav-tabs .nav-link {
+  color: #666;
+  font-weight: 500;
+}
+
+.data-management-container .nav-tabs .nav-link.active {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.stats-container .card h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #d32f2f;
+}
+
+.stats-container h4 {
+  color: #d32f2f;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #333;
+}
+
+.form-text {
+  color: #666;
+}
+
+.badge {
+  font-size: 1rem;
+}
