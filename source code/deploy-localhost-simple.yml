@@ -6,7 +6,7 @@
     mysql_root_password: "Abhi@9142"
     mysql_database: "bloodbank"
     backend_image: "abhi9142/bloodbank-backend:v2"
-    frontend_image: "abhi9142/bloodbank-frontend:v2"
+    frontend_image: "abhi9142/bloodbank-frontend:v3"
     network_name: "bloodbank-network"
 
   tasks:
