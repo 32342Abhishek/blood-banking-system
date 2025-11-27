@@ -15,7 +15,7 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: Abhishek
+          MYSQL_ROOT_PASSWORD: Abhi@9142
           MYSQL_DATABASE: bloodbank
         ports:
           - 3306:3306
