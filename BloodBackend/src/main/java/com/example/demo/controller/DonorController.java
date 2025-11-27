@@ -1,8 +1,11 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.DonorRegistrationRequest;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.model.Donor;
+import com.example.demo.model.Hospital;
 import com.example.demo.service.DonorService;
+import com.example.demo.service.HospitalService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,21 +20,41 @@ import java.util.Optional;
 public class DonorController {
 
     private final DonorService donorService;
+    private final HospitalService hospitalService;
 
     @Autowired
-    public DonorController(DonorService donorService) {
+    public DonorController(DonorService donorService, HospitalService hospitalService) {
         this.donorService = donorService;
+        this.hospitalService = hospitalService;
     }
 
     @PostMapping
-    public ResponseEntity<?> registerDonor(@RequestBody Donor donor) {
+    public ResponseEntity<?> registerDonor(@RequestBody DonorRegistrationRequest request) {
         // Check if the username or email already exists
-        if (donorService.getDonorByUsername(donor.getUsername()).isPresent()) {
+        if (donorService.getDonorByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already taken");
         }
 
-        if (donorService.getDonorByEmail(donor.getEmail()).isPresent()) {
+        if (donorService.getDonorByEmail(request.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already registered");
+        }
+
+        // Create donor from request
+        Donor donor = new Donor();
+        donor.setName(request.getName());
+        donor.setLocation(request.getLocation());
+        donor.setPhone(request.getPhone());
+        donor.setBloodGroup(request.getBloodGroup());
+        donor.setUsername(request.getUsername());
+        donor.setPassword(request.getPassword());
+        donor.setEmail(request.getEmail());
+        
+        // Set hospital if provided
+        if (request.getHospitalId() != null) {
+            Optional<Hospital> hospital = hospitalService.getHospitalById(request.getHospitalId());
+            if (hospital.isPresent()) {
+                donor.setHospital(hospital.get());
+            }
         }
 
         // Save the donor
@@ -161,5 +184,37 @@ public class DonorController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+    
+    @GetMapping("/hospital/{hospitalId}")
+    public ResponseEntity<List<Donor>> getDonorsByHospital(@PathVariable Long hospitalId) {
+        List<Donor> donors = donorService.getDonorsByHospital(hospitalId);
+        
+        // Remove passwords from response
+        donors.forEach(donor -> donor.setPassword(null));
+        
+        return ResponseEntity.ok(donors);
+    }
+    
+    @GetMapping("/hospital/{hospitalId}/bloodGroup/{bloodGroup}")
+    public ResponseEntity<List<Donor>> getDonorsByHospitalAndBloodGroup(
+            @PathVariable Long hospitalId, 
+            @PathVariable String bloodGroup) {
+        List<Donor> donors = donorService.getDonorsByBloodGroupAndHospital(bloodGroup, hospitalId);
+        
+        // Remove passwords from response
+        donors.forEach(donor -> donor.setPassword(null));
+        
+        return ResponseEntity.ok(donors);
+    }
+    
+    @GetMapping("/hospital/{hospitalId}/available")
+    public ResponseEntity<List<Donor>> getAvailableDonorsByHospital(@PathVariable Long hospitalId) {
+        List<Donor> donors = donorService.getAvailableDonorsByHospital(hospitalId);
+        
+        // Remove passwords from response
+        donors.forEach(donor -> donor.setPassword(null));
+        
+        return ResponseEntity.ok(donors);
     }
 }

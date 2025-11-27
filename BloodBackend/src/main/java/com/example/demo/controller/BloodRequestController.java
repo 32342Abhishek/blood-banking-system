@@ -22,7 +22,8 @@ public class BloodRequestController {
     private final HospitalService hospitalService;
 
     @Autowired
-    public BloodRequestController(BloodRequestService bloodRequestService, HospitalService hospitalService) {
+    public BloodRequestController(BloodRequestService bloodRequestService, 
+                                  HospitalService hospitalService) {
         this.bloodRequestService = bloodRequestService;
         this.hospitalService = hospitalService;
     }
@@ -35,6 +36,11 @@ public class BloodRequestController {
         // Set default status if not provided
         if (bloodRequest.getRequestStatus() == null || bloodRequest.getRequestStatus().isEmpty()) {
             bloodRequest.setRequestStatus("PENDING");
+        }
+        
+        // Set default priority if not provided
+        if (bloodRequest.getPriority() == null || bloodRequest.getPriority().isEmpty()) {
+            bloodRequest.setPriority("NORMAL");
         }
         
         // Validate required fields
@@ -50,6 +56,7 @@ public class BloodRequestController {
         try {
             BloodRequest savedRequest = bloodRequestService.saveBloodRequest(bloodRequest);
             System.out.println("Successfully saved blood request: " + savedRequest);
+            
             return ResponseEntity.status(HttpStatus.CREATED).body(savedRequest);
         } catch (Exception e) {
             System.err.println("Error saving blood request: " + e.getMessage());

@@ -9,9 +9,90 @@ This project consists of:
 1. **Backend**: Spring Boot application providing RESTful API services
 2. **Frontend**: React-based user interface for donors, administrators, and hospital staff
 
-## System Architecture
+## System Requirements
 
-![Architecture](https://via.placeholder.com/800x400?text=Blood+Banking+System+Architecture)
+- **Java Development Kit**: JDK 17 or higher
+- **Node.js**: Version 16.0.0 or higher
+- **npm**: Version 8.0.0 or higher
+- **MySQL**: Version 8.0 or higher
+
+## Quick Start
+
+For Windows users:
+
+1. Simply run the `start_dev_environment.bat` file in the root directory.
+2. This will:
+   - Install Maven if not already installed
+   - Update API URLs across all frontend components
+   - Start the backend server
+   - Start the frontend development server
+
+You can then access:
+- Backend API: http://localhost:8081
+- Frontend UI: http://localhost:5173
+
+## Manual Setup
+
+### Backend Setup
+
+1. Navigate to the backend directory:
+   ```
+   cd BloodBackend
+   ```
+
+2. Run the Spring Boot application:
+   ```
+   mvn spring-boot:run
+   ```
+
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+   ```
+   cd bloodbankingsys/blood_banking_system-master
+   ```
+
+2. Install dependencies:
+   ```
+   npm install
+   ```
+
+3. Start the development server:
+   ```
+   npm run dev
+   ```
+
+## Features
+
+1. **Donor Management**: Register donors, track donation history, and manage eligibility
+2. **Blood Inventory**: Track blood units by type, expiration, and availability
+3. **Hospital Integration**: Process blood requests from hospitals
+4. **Administrative Dashboard**: Monitor system metrics and generate reports
+5. **User Authentication**: Secure login for donors, staff, and administrators
+
+## API Endpoints
+
+The backend provides a RESTful API with the following main endpoints:
+
+- `/api/auth`: Authentication endpoints
+- `/api/donors`: Donor management
+- `/api/inventory`: Blood inventory management
+- `/api/hospitals`: Hospital integration
+- `/api/admin`: Administrative functions
+
+## Troubleshooting
+
+If you encounter any issues:
+
+1. **Connection Refused Errors**: Make sure the backend is running at http://localhost:8081
+2. **Maven Not Found**: The startup script will install Maven automatically, or you can run `install_maven.bat`
+3. **Database Errors**: Check that MySQL is running and properly configured in `application.properties`
+
+## Log Files
+
+Log files are generated in the `logs` directory:
+- `backend.log`: Spring Boot server logs
+- `frontend.log`: React development server logs
 
 ### Key Components
 
@@ -87,9 +168,9 @@ This project consists of:
    - React frontend served via Nginx
 
 3. Access the services:
-   - Frontend: http://localhost:80
-   - Backend API: http://localhost:8081
-   - MySQL database: localhost:3306
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8082
+   - MySQL database: localhost:3308 (mapped to 3306 internally)
 
 4. To view logs from the containers:
    ```
@@ -133,7 +214,16 @@ If you encounter issues:
    docker-compose logs db
    ```
 
-3. Ensure ports 80, 8081, and 3306 are available on your host system
+3. Ensure ports 3000, 8082, and 3308 are available on your host system
+
+4. If you encounter dependency issues, use the provided installation scripts:
+   ```
+   # On Windows
+   .\install_dependencies.bat
+   
+   # On Linux/Mac
+   ./install_dependencies.sh
+   ```
 
 ## Testing
 

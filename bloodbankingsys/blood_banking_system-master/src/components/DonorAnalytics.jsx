@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
+import { getApiUrl } from '../utils/apiConfig';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import './DonorAnalytics.css';
@@ -24,7 +25,7 @@ function DonorAnalytics() {
   const fetchDonors = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8081/api/donors', {
+      const response = await fetch(getApiUrl('donors'), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -47,7 +48,7 @@ function DonorAnalytics() {
 
   const fetchDonations = async () => {
     try {
-      const response = await fetch('http://localhost:8081/api/blood-donations', {
+      const response = await fetch(getApiUrl('blood-donations'), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -95,7 +96,7 @@ function DonorAnalytics() {
   const getBloodTypeChartData = () => {
     const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
     const bloodTypeCounts = bloodTypes.map(type => 
-      donors.filter(donor => donor.bloodType === type).length
+      donors.filter(donor => donor.bloodGroup === type).length
     );
     
     return {
@@ -235,7 +236,7 @@ function DonorAnalytics() {
     }).length;
     
     const totalDonations = filteredDonations.length;
-    const totalUnits = filteredDonations.reduce((sum, donation) => sum + (donation.units || 0), 0);
+    const totalUnits = filteredDonations.reduce((sum, donation) => sum + (donation.quantityMl || 0), 0);
     
     return {
       totalDonors,

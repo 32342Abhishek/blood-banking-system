@@ -65,4 +65,30 @@ public interface DonorRepository extends JpaRepository<Donor, Long> {
      * @return True if a donor with the email exists, false otherwise
      */
     boolean existsByEmail(String email);
+    
+    /**
+     * Find donors by hospital ID
+     * 
+     * @param hospitalId The ID of the hospital
+     * @return A list of donors associated with the given hospital
+     */
+    List<Donor> findByHospitalId(Long hospitalId);
+    
+    /**
+     * Find donors by blood group and hospital ID
+     * 
+     * @param bloodGroup The blood group to search for
+     * @param hospitalId The ID of the hospital
+     * @return A list of donors with the given blood group at the specified hospital
+     */
+    List<Donor> findByBloodGroupAndHospitalId(String bloodGroup, Long hospitalId);
+    
+    /**
+     * Find available donors by hospital ID
+     * 
+     * @param isAvailable The availability status
+     * @param hospitalId The ID of the hospital
+     * @return A list of available donors at the specified hospital
+     */
+    List<Donor> findByIsAvailableAndHospitalId(boolean isAvailable, Long hospitalId);
 }

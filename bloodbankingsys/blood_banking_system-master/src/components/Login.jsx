@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "./Auth.css";
 import { AuthContext } from "./AuthContext";
+import { getApiUrl } from "../utils/apiConfig";
 
 const Login = () => {
   const { setAuthData } = useContext(AuthContext);
@@ -21,7 +22,7 @@ const Login = () => {
       if (email && password) {
         console.log("Attempting login for:", email);
         
-        const response = await fetch("http://localhost:8081/api/auth/login", {
+        const response = await fetch(getApiUrl("auth/login"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

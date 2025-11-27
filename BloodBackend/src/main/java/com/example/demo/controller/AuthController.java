@@ -231,4 +231,43 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+    
+    @GetMapping("/init-admin")
+    public ResponseEntity<?> initializeAdmin() {
+        try {
+            // Check if admin user already exists
+            User existingAdmin = userService.findByUsername("admin@bloodbank.com");
+            
+            if (existingAdmin == null) {
+                // Create default admin user
+                User adminUser = new User();
+                adminUser.setName("System Administrator");
+                adminUser.setEmail("admin@bloodbank.com");
+                adminUser.setPassword(passwordEncoder.encode("Admin@123"));
+                adminUser.setRole("ADMIN");
+                adminUser.setBloodType("O+");
+                
+                userService.saveUser(adminUser);
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "Admin user created successfully");
+                response.put("email", "admin@bloodbank.com");
+                response.put("password", "Admin@123");
+                response.put("note", "Please change the password after first login");
+                
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "Admin user already exists");
+                response.put("email", existingAdmin.getEmail());
+                response.put("role", existingAdmin.getRole());
+                
+                return ResponseEntity.ok(response);
+            }
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Error initializing admin: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 }

@@ -47,8 +47,7 @@ export const adminApiRequest = async (endpoint, method = 'GET', body = null) => 
         'Content-Type': 'application/json',
         'Accept': 'application/json'
         // Removed custom X-Admin-Access header that was causing CORS issues
-      },
-      credentials: 'include'
+      }
     };
     
     if (body && (method === 'POST' || method === 'PUT')) {

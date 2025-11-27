@@ -38,7 +38,7 @@ function BloodInventory() {
   const fetchInventory = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8081/api/blood-inventory', {
+      const response = await fetch('http://localhost:8082/api/blood-inventory', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -97,7 +97,7 @@ function BloodInventory() {
   
   const fetchSummary = async () => {
     try {
-      const response = await fetch('http://localhost:8081/api/blood-inventory/summary', {
+      const response = await fetch('http://localhost:8082/api/blood-inventory/summary', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -155,8 +155,8 @@ function BloodInventory() {
       };
       
       const url = editMode 
-        ? `http://localhost:8081/api/blood-inventory/${editId}` 
-        : 'http://localhost:8081/api/blood-inventory';
+        ? `http://localhost:8082/api/blood-inventory/${editId}` 
+        : 'http://localhost:8082/api/blood-inventory';
       
       const method = editMode ? 'PUT' : 'POST';
       
@@ -210,7 +210,7 @@ function BloodInventory() {
     }
     
     try {
-      const response = await fetch(`http://localhost:8081/api/blood-inventory/${id}`, {
+      const response = await fetch(`http://localhost:8082/api/blood-inventory/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

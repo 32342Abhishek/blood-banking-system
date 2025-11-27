@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "./Auth.css";
 import { AuthContext } from "./AuthContext";
+import { getApiUrl } from "../utils/apiConfig";
 
 export const Register = () => {
   const [name, setName] = useState("");
@@ -26,7 +27,7 @@ export const Register = () => {
         
         // First try to check if the backend is accessible
         try {
-          const pingResponse = await fetch("http://localhost:8081/api/test/ping", {
+          const pingResponse = await fetch(getApiUrl("test/ping"), {
             method: "GET",
             mode: 'cors',
             credentials: 'include'
@@ -37,7 +38,7 @@ export const Register = () => {
         }
         
         // Call backend API with explicit mode
-        const response = await fetch("http://localhost:8081/api/auth/register", {
+        const response = await fetch(getApiUrl("auth/register"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -53,7 +54,7 @@ export const Register = () => {
           }),
         }).catch(err => {
           console.error("Network error during fetch:", err);
-          throw new Error("Server connection failed. Is the backend running at http://localhost:8081?");
+          throw new Error("Server connection failed. Is the backend running at http://localhost:8082?");
         });
         
         console.log("Registration response status:", response.status);
@@ -99,7 +100,7 @@ export const Register = () => {
         // Show detailed diagnostics if it's a network error
         if (err.message && err.message.includes("connection failed")) {
           setError(
-            "Connection error: Could not reach the server at http://localhost:8081. " +
+            "Connection error: Could not reach the server at http://localhost:8082. " +
             "Please ensure the backend server is running and check your network connection."
           );
         }

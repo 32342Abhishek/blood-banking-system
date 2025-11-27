@@ -94,4 +94,29 @@ public interface DonorService {
      * @return The updated donor if found, otherwise empty Optional
      */
     Optional<Donor> updateDonorAvailability(Long id, boolean isAvailable);
+    
+    /**
+     * Get donors by hospital
+     * 
+     * @param hospitalId The ID of the hospital
+     * @return A list of donors associated with the given hospital
+     */
+    List<Donor> getDonorsByHospital(Long hospitalId);
+    
+    /**
+     * Get donors by blood group and hospital
+     * 
+     * @param bloodGroup The blood group to search for
+     * @param hospitalId The ID of the hospital
+     * @return A list of donors with the given blood group at the specified hospital
+     */
+    List<Donor> getDonorsByBloodGroupAndHospital(String bloodGroup, Long hospitalId);
+    
+    /**
+     * Get available donors by hospital
+     * 
+     * @param hospitalId The ID of the hospital
+     * @return A list of available donors at the specified hospital
+     */
+    List<Donor> getAvailableDonorsByHospital(Long hospitalId);
 }

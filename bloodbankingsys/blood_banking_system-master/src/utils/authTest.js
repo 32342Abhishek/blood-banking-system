@@ -19,7 +19,7 @@ function checkAuth() {
   
   // Test API call with token
   console.log("\nTesting API call with token...");
-  fetch("http://localhost:8081/api/health", {
+  fetch("http://localhost:8082/api/health", {
     headers: token ? { "Authorization": `Bearer ${token}` } : {}
   })
   .then(response => {

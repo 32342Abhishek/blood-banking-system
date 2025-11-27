@@ -49,6 +49,14 @@ const AdminLogin = () => {
             errorData = null;
           }
           
+          // Show more specific error messages to help diagnose login issues
+          if (response.status === 401) {
+            setError("Invalid admin credentials. Make sure to use an email format like 'admin@example.com' and verify your password.");
+            console.error("Login tip: Try using the credentials created by the debug script - newadmin58430@test.com / Admin123!");
+          } else {
+            setError(errorData?.message || `Authentication failed (${response.status})`);
+          }
+          
           throw new Error(errorData?.message || `Authentication failed (${response.status})`);
         }
         
@@ -99,16 +107,35 @@ const AdminLogin = () => {
         <form className="admin-auth-form" onSubmit={handleSubmit}>
           {error && <div className="auth-error">{error}</div>}
           
+          <div className="info-box" style={{
+            background: '#e7f3ff',
+            border: '1px solid #2196F3',
+            borderRadius: '8px',
+            padding: '15px',
+            marginBottom: '20px',
+            fontSize: '14px'
+          }}>
+            <p style={{ margin: '0 0 10px 0', fontWeight: 'bold', color: '#1976D2' }}>
+              📧 Default Admin Credentials:
+            </p>
+            <p style={{ margin: '5px 0', fontFamily: 'monospace', color: '#333' }}>
+              <strong>Email:</strong> admin@bloodbank.com
+            </p>
+            <p style={{ margin: '5px 0', fontFamily: 'monospace', color: '#333' }}>
+              <strong>Password:</strong> Admin@123
+            </p>
+          </div>
+          
           <div className="form-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="username">Email</label>
             <div className="input-with-icon">
               <i className="fas fa-user"></i>
               <input
-                type="text"
+                type="email"
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your admin username"
+                placeholder="Enter your admin email"
                 required
               />
             </div>

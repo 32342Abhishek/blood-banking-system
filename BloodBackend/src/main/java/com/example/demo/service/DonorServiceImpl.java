@@ -98,4 +98,19 @@ public class DonorServiceImpl implements DonorService {
         
         return Optional.empty();
     }
+
+    @Override
+    public List<Donor> getDonorsByHospital(Long hospitalId) {
+        return donorRepository.findByHospitalId(hospitalId);
+    }
+
+    @Override
+    public List<Donor> getDonorsByBloodGroupAndHospital(String bloodGroup, Long hospitalId) {
+        return donorRepository.findByBloodGroupAndHospitalId(bloodGroup, hospitalId);
+    }
+
+    @Override
+    public List<Donor> getAvailableDonorsByHospital(Long hospitalId) {
+        return donorRepository.findByIsAvailableAndHospitalId(true, hospitalId);
+    }
 }

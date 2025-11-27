@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
+import { getApiUrl, apiPost } from "../utils/apiConfig";
 
 export const AuthContext = createContext();
 
@@ -34,6 +35,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkLoginStatus = () => {
       const storedToken = localStorage.getItem('token');
+      console.log("AuthContext: Checking login status...");
+      console.log("AuthContext: Token exists:", !!storedToken);
       
       if (storedToken) {
         // Check if token is expired
@@ -48,6 +51,9 @@ export const AuthProvider = ({ children }) => {
           const role = decodedToken.role || localStorage.getItem('userRole');
           const name = localStorage.getItem('userName');
           const email = decodedToken.sub; // 'sub' is the subject claim, typically the username/email
+          
+          console.log("AuthContext: Setting user with role:", role);
+          console.log("AuthContext: User data:", { id: userId, name, email, role });
           
           setUser({ id: userId, name, email, role });
         } else {
@@ -103,8 +109,8 @@ export const AuthProvider = ({ children }) => {
         console.log("Token expired or expiring soon, attempting to refresh...");
         
         try {
-          // Call refresh token endpoint
-          const response = await fetch("http://localhost:8081/api/auth/refresh", {
+          // Call refresh token endpoint using apiConfig
+          const response = await fetch(getApiUrl("auth/refresh"), {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -211,7 +217,7 @@ export const AuthProvider = ({ children }) => {
       
       // Make a test API call to verify the token is valid
       setTimeout(() => {
-        fetch("http://localhost:8081/api/health", {
+        fetch(getApiUrl("health"), {
           headers: {
             "Authorization": `Bearer ${storedToken}`
           }

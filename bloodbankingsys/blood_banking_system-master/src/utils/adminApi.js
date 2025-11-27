@@ -33,7 +33,6 @@ export async function adminApiRequest(endpoint, options = {}) {
     ...options,
     headers: mergedHeaders,
     mode: 'cors',
-    credentials: 'include',
     cache: 'no-cache'
   });
 

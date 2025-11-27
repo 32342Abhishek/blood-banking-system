@@ -32,7 +32,7 @@ public class AdminBloodInventoryController {
      * This endpoint allows bulk updating of blood inventory levels
      */
     @PutMapping("/update")
-    public ResponseEntity<?> updateBloodInventory(@RequestBody Map<String, Integer> updates, @RequestHeader(name = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<?> updateBloodInventory(@RequestBody Map<String, Map<String, Object>> updates, @RequestHeader(name = "Authorization", required = false) String authHeader) {
         System.out.println("Received blood inventory update request: " + updates);
         System.out.println("Auth header present: " + (authHeader != null ? "Yes" : "No"));
         
@@ -48,11 +48,15 @@ public class AdminBloodInventoryController {
             boolean allSuccess = true;
             
             // Process each blood group update
-            for (Map.Entry<String, Integer> entry : updates.entrySet()) {
+            for (Map.Entry<String, Map<String, Object>> entry : updates.entrySet()) {
                 String bloodGroup = entry.getKey();
-                Integer quantity = entry.getValue();
+                Map<String, Object> data = entry.getValue();
                 
-                if (bloodGroup != null && quantity != null) {
+                if (bloodGroup != null && data != null) {
+                    Integer quantity = data.get("quantity") != null ? 
+                        ((Number) data.get("quantity")).intValue() : 0;
+                    // Notes field is ignored as BloodInventory model doesn't have notes
+                    
                     // Find existing inventory for this blood group or create new
                     Optional<BloodInventory> inventoryOpt = bloodInventoryService.findLatestByBloodGroup(bloodGroup);
                     

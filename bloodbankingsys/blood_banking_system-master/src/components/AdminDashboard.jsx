@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
+import { getApiUrl } from "../utils/apiConfig";
 import DonationsManagement from "./DonationsManagement";
 import RequestsManagement from "./RequestsManagement";
 import BloodStockManagement from "./BloodStockManagement";
@@ -156,11 +157,34 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       
-      // Import the API utilities
-      const { apiPut, ENDPOINTS } = await import('../utils/api');
+      const token = localStorage.getItem("token");
       
-      // Use apiPut utility which handles authentication headers
-      await apiPut(ENDPOINTS.BLOOD_INVENTORY + '/update', updates);
+      if (!token) {
+        setError("Authentication required. Please log in.");
+        navigate("/admin-login");
+        return;
+      }
+      
+      // Make direct API call with proper authorization header
+      const response = await fetch(getApiUrl('blood-inventory/update'), {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(updates)
+      });
+      
+      if (response.status === 401 || response.status === 403) {
+        setError("Authentication failed. Please log in again.");
+        localStorage.removeItem("token");
+        navigate("/admin-login");
+        return;
+      }
+      
+      if (!response.ok) {
+        throw new Error(`Failed to update inventory: ${response.statusText}`);
+      }
       
       // Refresh inventory data
       fetchBloodInventory();
@@ -207,15 +231,14 @@ const AdminDashboard = () => {
       
       console.log("Fetching donors with token:", token.substring(0, 20) + "...");
       
-      const response = await fetch("http://localhost:8081/api/donors", {
+      const response = await fetch(getApiUrl("donors"), {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
-        mode: 'cors',
-        credentials: 'include'
+        mode: 'cors'
       });
       
       console.log("Donors API response status:", response.status);
@@ -242,7 +265,7 @@ const AdminDashboard = () => {
         throw new Error("Authentication token not found. Please log in again.");
       }
       
-      const response = await fetch("http://localhost:8081/api/blood-requests", {
+      const response = await fetch(getApiUrl("blood-requests"), {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -335,11 +358,28 @@ const AdminDashboard = () => {
   const deleteNotification = async (id) => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8081/api/notifications/${id}`, {
-        method: "DELETE"
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Session expired. Please login again.");
+        navigate("/admin-login");
+        return;
+      }
+
+      const response = await fetch(getApiUrl(`notifications/${id}`), {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       
-      if (!response.ok) throw new Error("Failed to delete notification");
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          alert("Session expired or unauthorized. Please login again.");
+          navigate("/admin-login");
+          return;
+        }
+        throw new Error("Failed to delete notification");
+      }
       
       // Update notifications list
       fetchNotifications();
@@ -355,17 +395,32 @@ const AdminDashboard = () => {
   
   const approveDonation = async (id) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Session expired. Please login again.");
+        navigate("/admin-login");
+        return;
+      }
+
       const response = await fetch(
-        `http://localhost:8081/api/blood-donations/${id}/approve`,
+        getApiUrl(`blood-donations/${id}/approve`),
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       
-      if (!response.ok) throw new Error("Failed to approve donation");
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          alert("Session expired or unauthorized. Please login again.");
+          navigate("/admin-login");
+          return;
+        }
+        throw new Error("Failed to approve donation");
+      }
       
       // Update UI after successful approval
       fetchPendingDonors();
@@ -385,18 +440,33 @@ const AdminDashboard = () => {
   
   const rejectDonation = async (id, reason) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Session expired. Please login again.");
+        navigate("/admin-login");
+        return;
+      }
+
       const response = await fetch(
-        `http://localhost:8081/api/blood-donations/${id}/reject`,
+        getApiUrl(`blood-donations/${id}/reject`),
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ reason }),
         }
       );
       
-      if (!response.ok) throw new Error("Failed to reject donation");
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          alert("Session expired or unauthorized. Please login again.");
+          navigate("/admin-login");
+          return;
+        }
+        throw new Error("Failed to reject donation");
+      }
       
       // Update UI after successful rejection
       fetchPendingDonors();
@@ -415,17 +485,32 @@ const AdminDashboard = () => {
   
   const approveRequest = async (id) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Session expired. Please login again.");
+        navigate("/admin-login");
+        return;
+      }
+
       const response = await fetch(
-        `http://localhost:8081/api/blood-requests/${id}/approve`,
+        getApiUrl(`blood-requests/${id}/approve`),
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       
-      if (!response.ok) throw new Error("Failed to approve blood request");
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          alert("Session expired or unauthorized. Please login again.");
+          navigate("/admin-login");
+          return;
+        }
+        throw new Error("Failed to approve blood request");
+      }
       
       // Update UI after successful approval
       fetchPendingRequests();
@@ -445,18 +530,33 @@ const AdminDashboard = () => {
   
   const rejectRequest = async (id, reason) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Session expired. Please login again.");
+        navigate("/admin-login");
+        return;
+      }
+
       const response = await fetch(
-        `http://localhost:8081/api/blood-requests/${id}/reject`,
+        getApiUrl(`blood-requests/${id}/reject`),
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ reason }),
         }
       );
       
-      if (!response.ok) throw new Error("Failed to reject blood request");
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          alert("Session expired or unauthorized. Please login again.");
+          navigate("/admin-login");
+          return;
+        }
+        throw new Error("Failed to reject blood request");
+      }
       
       // Update UI after successful rejection
       fetchPendingRequests();
@@ -473,40 +573,49 @@ const AdminDashboard = () => {
     }
   };
   
-  const sendNotification = async (notificationData) => {
+  const sendNotification = async (notificationDataOrRecipientId, type, message) => {
     try {
       setLoading(true);
       
       // Support both old and new notification formats
       let payload;
-      if (typeof notificationData === 'object' && notificationData.title) {
+      if (typeof notificationDataOrRecipientId === 'object' && notificationDataOrRecipientId.title) {
         // New format from NotificationsSystem
         payload = {
-          title: notificationData.title,
-          message: notificationData.message,
-          recipientType: notificationData.recipientType,
-          recipientId: notificationData.recipientId,
-          priority: notificationData.priority,
-          bloodGroup: notificationData.bloodGroup,
-          status: "UNREAD"
+          title: notificationDataOrRecipientId.title,
+          message: notificationDataOrRecipientId.message,
+          bloodType: notificationDataOrRecipientId.bloodGroup || null,
+          unitsNeeded: notificationDataOrRecipientId.unitsNeeded || 1,
+          hospitalName: notificationDataOrRecipientId.hospitalName || "Blood Bank",
+          location: notificationDataOrRecipientId.location || "N/A",
+          status: "ACTIVE"
         };
       } else {
         // Old format (recipientId, type, message)
-        const [recipientId, type, message] = arguments;
         payload = {
-          recipientId,
-          type,
-          message,
-          status: "UNREAD"
+          title: type || "Notification",
+          message: message || "New notification",
+          bloodType: null,
+          unitsNeeded: 1,
+          hospitalName: "Blood Bank",
+          location: "N/A",
+          status: "ACTIVE"
         };
       }
       
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.warn("No token available for sending notification");
+        return;
+      }
+
       const response = await fetch(
-        `http://localhost:8081/api/notifications`,
+        getApiUrl('emergency-notifications'),
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
         }
@@ -528,17 +637,32 @@ const AdminDashboard = () => {
   
   const updateAppointmentStatus = async (id, status) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Session expired. Please login again.");
+        navigate("/admin-login");
+        return;
+      }
+
       const response = await fetch(
-        `http://localhost:8081/api/appointments/${id}/status?status=${status}`,
+        getApiUrl(`appointments/${id}/status?status=${status}`),
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       
-      if (!response.ok) throw new Error("Failed to update appointment");
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          alert("Session expired or unauthorized. Please login again.");
+          navigate("/admin-login");
+          return;
+        }
+        throw new Error("Failed to update appointment");
+      }
       
       // Refresh appointments data
       fetchAppointments();
@@ -551,21 +675,37 @@ const AdminDashboard = () => {
 
   const updateRequestStatus = async (id, status) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Session expired. Please login again.");
+        navigate("/admin-login");
+        return;
+      }
+
       const response = await fetch(
-        `http://localhost:8081/api/blood-requests/${id}/status?status=${status}`,
+        getApiUrl(`blood-requests/${id}/status?status=${status}`),
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       
-      if (!response.ok) throw new Error("Failed to update blood request");
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          alert("Session expired or unauthorized. Please login again.");
+          navigate("/admin-login");
+          return;
+        }
+        throw new Error("Failed to update blood request");
+      }
       
       // Refresh blood requests data
       fetchRequests();
       calculateStats();
+      alert(`Blood request status updated to ${status}`);
     } catch (err) {
       console.error("Error updating blood request:", err);
       alert("Failed to update blood request status");
@@ -620,6 +760,21 @@ const AdminDashboard = () => {
         <div className="admin-header">
           <h3 className="admin-greeting">Good {getCurrentTime()}, {user?.name || 'Admin'}</h3>
           <div className="admin-date">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+        </div>
+        
+        <div className="quick-actions-section">
+          <button className="action-button" onClick={() => navigate("/hospital-registration")}>
+            + Add Hospital
+          </button>
+          <button className="action-button" onClick={() => navigate("/donar")}>
+            + Add Donor
+          </button>
+          <button className="action-button" onClick={() => navigate("/schedule-appointment")}>
+            + Schedule Appointment
+          </button>
+          <button className="action-button" onClick={() => navigate("/emergency-notification")}>
+            + Send Emergency Alert
+          </button>
         </div>
         
         <div className="dashboard-summary">
@@ -799,9 +954,14 @@ const AdminDashboard = () => {
       <div className="donors-container">
         <div className="inventory-header">
           <h3>Registered Donors</h3>
-          <button className="action-button" onClick={() => navigate("/add-donor")}>
-            + Add Donor
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button className="action-button" onClick={() => navigate("/hospital-registration")}>
+              + Add Hospital
+            </button>
+            <button className="action-button" onClick={() => navigate("/donar")}>
+              + Add Donor
+            </button>
+          </div>
         </div>
         {donors.length === 0 ? (
           <p>No donors registered.</p>
@@ -837,9 +997,11 @@ const AdminDashboard = () => {
                         : "Never"}
                     </td>
                     <td>
-                      <button className="action-button" onClick={() => navigate(`/donor-details/${donor.id}`)}>
+                      {/* TODO: Implement DonorDetails component and route */}
+                      {/* <button className="action-button" onClick={() => navigate(`/donor-details/${donor.id}`)}>
                         View Details
-                      </button>
+                      </button> */}
+                      <span className="text-muted">View Details (Coming Soon)</span>
                     </td>
                   </tr>
                 ))}

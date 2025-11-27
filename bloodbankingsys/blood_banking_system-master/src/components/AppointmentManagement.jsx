@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
+import { getApiUrl } from '../utils/apiConfig';
 import './AppointmentManagement.css';
 
 function AppointmentManagement() {
@@ -30,7 +31,7 @@ function AppointmentManagement() {
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8081/api/donation-appointments', {
+      const response = await fetch(getApiUrl('donation-appointments'), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -53,7 +54,7 @@ function AppointmentManagement() {
 
   const fetchDonors = async () => {
     try {
-      const response = await fetch('http://localhost:8081/api/donors', {
+      const response = await fetch(getApiUrl('donors'), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -86,15 +87,17 @@ function AppointmentManagement() {
       const appointmentDateTime = `${formData.appointmentDate}T${formData.appointmentTime}:00`;
       
       const apiData = {
-        donorId: parseInt(formData.donorId),
+        donor: {
+          id: parseInt(formData.donorId)
+        },
         appointmentDateTime: appointmentDateTime,
         status: formData.status,
         notes: formData.notes
       };
       
       const url = editMode 
-        ? `http://localhost:8081/api/donation-appointments/${editId}` 
-        : 'http://localhost:8081/api/donation-appointments';
+        ? getApiUrl(`donation-appointments/${editId}`) 
+        : getApiUrl('donation-appointments');
       
       const method = editMode ? 'PUT' : 'POST';
       
@@ -153,7 +156,7 @@ function AppointmentManagement() {
     }
     
     try {
-      const response = await fetch(`http://localhost:8081/api/donation-appointments/${id}`, {
+      const response = await fetch(getApiUrl(`donation-appointments/${id}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -175,7 +178,7 @@ function AppointmentManagement() {
 
   const updateAppointmentStatus = async (id, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:8081/api/donation-appointments/${id}/status`, {
+      const response = await fetch(getApiUrl(`donation-appointments/${id}/status`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

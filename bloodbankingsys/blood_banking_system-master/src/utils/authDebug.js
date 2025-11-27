@@ -6,7 +6,7 @@ const testApiAuth = async () => {
   try {
     console.log("--- Testing Authentication Flow ---");
     console.log("1. Attempting login...");
-    const loginResponse = await fetch("http://localhost:8081/api/auth/login", {
+    const loginResponse = await fetch("http://localhost:8082/api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -31,7 +31,7 @@ const testApiAuth = async () => {
     
     // 2. Test a protected endpoint
     console.log("\n2. Testing authenticated API call...");
-    const apiResponse = await fetch("http://localhost:8081/api/blood-inventory/stock", {
+    const apiResponse = await fetch("http://localhost:8082/api/blood-inventory/stock", {
       headers: {
         "Authorization": `Bearer ${authData.token}`
       }

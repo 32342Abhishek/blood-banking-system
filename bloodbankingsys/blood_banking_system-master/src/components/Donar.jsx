@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
+import { getApiUrl } from "../utils/apiConfig";
 import "./Donar.css";
 
 const Donar = () => {
@@ -71,7 +72,7 @@ const Donar = () => {
       let donorId = null;
       
       // Try to create/register as a donor first
-      const donorRes = await fetch("http://localhost:8081/api/donors", {
+      const donorRes = await fetch(getApiUrl("donors"), {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -94,7 +95,7 @@ const Donar = () => {
             console.log("Donor may already exist, trying to find by email...");
             const token = localStorage.getItem("token");
             console.log("Using token for search:", token);
-            const searchRes = await fetch(`http://localhost:8081/api/donors/search?email=${encodeURIComponent(user?.email)}`, {
+            const searchRes = await fetch(`http://localhost:8082/api/donors/search?email=${encodeURIComponent(user?.email)}`, {
               headers: { 
                 "Authorization": `Bearer ${token}`,
                 "Accept": "application/json"
@@ -122,7 +123,7 @@ const Donar = () => {
       }
       
       // Now proceed with blood donation using the donor ID
-      const res = await fetch("http://localhost:8081/api/blood-donations", {
+      const res = await fetch(getApiUrl("blood-donations"), {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -190,7 +191,7 @@ const Donar = () => {
       
       console.log("Fetching donors with token:", token);
       
-      const res = await fetch("http://localhost:8081/api/donors", {
+      const res = await fetch(getApiUrl("donors"), {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,

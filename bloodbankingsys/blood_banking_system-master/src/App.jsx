@@ -23,19 +23,42 @@ import FAQ from "./components/FAQ";
 import DonorAnalytics from "./components/DonorAnalytics";
 import EmergencyNotification from "./components/EmergencyNotification";
 import TokenDebugger from "./components/TokenDebugger";
+import HospitalRegistration from "./components/HospitalRegistration";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SupportChatbot from "./components/SupportChatbot";
 
 const App = () => {
-  const { loggedIn, user } = useContext(AuthContext);
+  const { loggedIn, user, isLoading } = useContext(AuthContext);
   const location = useLocation();
 
   // Check if user is admin
   const isAdmin = loggedIn && user?.role === 'ADMIN';
   
+  // Debug logging
+  console.log("App.jsx: isLoading =", isLoading);
+  console.log("App.jsx: loggedIn =", loggedIn);
+  console.log("App.jsx: user =", user);
+  console.log("App.jsx: user?.role =", user?.role);
+  console.log("App.jsx: isAdmin =", isAdmin);
+  
   // Check if current route is login or register page
   const isAuthPage = ['/login', '/register', '/admin-login', '/admin-register'].includes(location.pathname);
+
+  // Show loading indicator while checking authentication
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '1.5rem'
+      }}>
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <>
@@ -66,6 +89,7 @@ const App = () => {
           <Route path="/hospital-integration" element={isAdmin ? <HospitalIntegration /> : <Navigate to="/login" />} />
           <Route path="/donor-analytics" element={isAdmin ? <DonorAnalytics /> : <Navigate to="/login" />} />
           <Route path="/emergency-notification" element={isAdmin ? <EmergencyNotification /> : <Navigate to="/login" />} />
+          <Route path="/hospital-registration" element={isAdmin ? <HospitalRegistration /> : <Navigate to="/login" />} />
           <Route path="/token-debugger" element={isAdmin ? <TokenDebugger /> : <Navigate to="/login" />} />
 
           {/* Auth Routes */}

@@ -3,7 +3,7 @@
  */
 
 // Base URL for the backend API
-export const API_BASE_URL = 'http://localhost:8081/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081/api';
 
 // API endpoint constants
 export const ENDPOINTS = {
@@ -29,7 +29,7 @@ export const ENDPOINTS = {
   BLOOD_REQUESTS: '/blood-requests',
   
   // Appointments
-  APPOINTMENTS: '/appointments',
+  APPOINTMENTS: '/donation-appointments',
   
   // Emergency notifications
   EMERGENCY_NOTIFICATIONS: '/emergency-notifications',
@@ -136,18 +136,6 @@ export const getHeaders = (includeContent = true) => {
 export const apiGet = async (endpoint) => {
   console.log(`Making GET request to: ${API_BASE_URL}${endpoint}`);
   
-  // Try to refresh token if it's about to expire
-  try {
-    const AuthContext = await import('../components/AuthContext').then(module => module.AuthContext);
-    const { refreshTokenIfNeeded } = AuthContext._currentValue;
-    
-    if (refreshTokenIfNeeded) {
-      await refreshTokenIfNeeded();
-    }
-  } catch (refreshError) {
-    console.warn("Could not refresh token:", refreshError);
-  }
-  
   try {
     // Get token directly each time to ensure fresh token
     const token = localStorage.getItem('token');
@@ -214,7 +202,6 @@ export const apiGet = async (endpoint) => {
       method: 'GET',
       headers: headers,
       mode: 'cors',
-      credentials: 'include',
       cache: 'no-cache'
     });
     
@@ -295,10 +282,8 @@ export const apiPost = async (endpoint, data) => {
       headers: headers,
       body: JSON.stringify(data),
       mode: 'cors',
-      credentials: 'include',
       cache: 'no-cache'
     });
-    
     console.log(`API Response for ${endpoint}: Status ${response.status}`);
     
     if (response.status === 401) {
@@ -421,7 +406,6 @@ export const apiDelete = async (endpoint) => {
       method: 'DELETE',
       headers: headers,
       mode: 'cors',
-      credentials: 'include',
       cache: 'no-cache'
     });
     

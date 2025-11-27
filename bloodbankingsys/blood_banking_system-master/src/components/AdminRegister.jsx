@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
+import { getApiUrl } from "../utils/apiConfig";
 import "./AdminLogin.css";
 
 const AdminRegister = () => {
@@ -97,8 +98,8 @@ const AdminRegister = () => {
         registrationCode: formData.registrationCode
       });
       
-      // Register admin
-      const response = await fetch("http://localhost:8081/api/auth/admin/register", {
+      // Register admin using centralized API URL
+      const response = await fetch(getApiUrl("auth/admin/register"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
