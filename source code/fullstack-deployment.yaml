@@ -100,12 +100,9 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: abhi9142/bloodbank-frontend:v2
+          image: abhi9142/bloodbank-frontend:v4-k8s
           ports:
             - containerPort: 5173
-          env:
-            - name: VITE_API_URL
-              value: http://backend:8081
 
 # =========================
 # Services
