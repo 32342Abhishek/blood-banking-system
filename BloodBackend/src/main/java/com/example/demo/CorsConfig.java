@@ -23,8 +23,12 @@ public class CorsConfig {
             "http://localhost:5174",
             "http://localhost:3000",
             "http://localhost:8080",
+            "http://localhost:30173",  // Kubernetes frontend NodePort
+            "http://localhost:30081",  // Kubernetes backend NodePort
             "http://127.0.0.1:5173",
-            "http://127.0.0.1:5174"
+            "http://127.0.0.1:5174",
+            "http://127.0.0.1:30173",
+            "http://127.0.0.1:30081"
             // Removing wildcard "*" as it's not compatible with allowCredentials(true)
         ));
         
