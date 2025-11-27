@@ -1,0 +1,229 @@
+---
+- name: Deploy Blood Banking System on Linux VMs
+  hosts: all
+  become: yes
+  vars:
+    project_name: blood-banking-system
+    mysql_root_password: Abhi@9142
+    mysql_database: bloodbank
+    backend_image: abhi9142/bloodbank-backend:v2
+    frontend_image: abhi9142/bloodbank-frontend:v2
+    docker_network: bloodbank-network
+
+  tasks:
+    - name: Update apt cache (Debian/Ubuntu)
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Update yum cache (RedHat/CentOS)
+      yum:
+        update_cache: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Install required packages (Debian/Ubuntu)
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Add Docker GPG key (Debian/Ubuntu)
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Add Docker repository (Debian/Ubuntu)
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install Docker (Debian/Ubuntu)
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install Docker (RedHat/CentOS)
+      yum:
+        name:
+          - docker
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Install Docker Compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Create project directory
+      file:
+        path: /opt/{{ project_name }}
+        state: directory
+        mode: '0755'
+
+    - name: Create Docker network
+      docker_network:
+        name: "{{ docker_network }}"
+        state: present
+
+- name: Deploy MySQL Database
+  hosts: database
+  become: yes
+  vars:
+    mysql_root_password: Abhi@9142
+    mysql_database: bloodbank
+    docker_network: bloodbank-network
+
+  tasks:
+    - name: Pull MySQL Docker image
+      docker_image:
+        name: mysql:8.0
+        source: pull
+
+    - name: Create MySQL data volume
+      docker_volume:
+        name: mysql_data
+        state: present
+
+    - name: Run MySQL container
+      docker_container:
+        name: bloodbank_mysql
+        image: mysql:8.0
+        state: started
+        restart_policy: always
+        networks:
+          - name: "{{ docker_network }}"
+        published_ports:
+          - "3306:3306"
+        env:
+          MYSQL_ROOT_PASSWORD: "{{ mysql_root_password }}"
+          MYSQL_DATABASE: "{{ mysql_database }}"
+        volumes:
+          - mysql_data:/var/lib/mysql
+        healthcheck:
+          test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+
+    - name: Wait for MySQL to be ready
+      wait_for:
+        host: localhost
+        port: 3306
+        delay: 10
+        timeout: 60
+
+- name: Deploy Backend Application
+  hosts: webservers
+  become: yes
+  vars:
+    mysql_root_password: Abhi@9142
+    mysql_database: bloodbank
+    backend_image: abhi9142/bloodbank-backend:v2
+    docker_network: bloodbank-network
+    db_host: "{{ groups['database'][0] }}"
+
+  tasks:
+    - name: Pull Backend Docker image
+      docker_image:
+        name: "{{ backend_image }}"
+        source: pull
+
+    - name: Run Backend container
+      docker_container:
+        name: bloodbank_backend
+        image: "{{ backend_image }}"
+        state: started
+        restart_policy: always
+        networks:
+          - name: "{{ docker_network }}"
+        published_ports:
+          - "8081:8081"
+        env:
+          SPRING_DATASOURCE_URL: "jdbc:mysql://{{ db_host }}:3306/{{ mysql_database }}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: "{{ mysql_root_password }}"
+          SPRING_JPA_HIBERNATE_DDL_AUTO: update
+          SERVER_PORT: "8081"
+
+    - name: Wait for Backend to be ready
+      wait_for:
+        host: localhost
+        port: 8081
+        delay: 15
+        timeout: 120
+
+- name: Deploy Frontend Application
+  hosts: webservers
+  become: yes
+  vars:
+    frontend_image: abhi9142/bloodbank-frontend:v2
+    docker_network: bloodbank-network
+
+  tasks:
+    - name: Pull Frontend Docker image
+      docker_image:
+        name: "{{ frontend_image }}"
+        source: pull
+
+    - name: Run Frontend container
+      docker_container:
+        name: bloodbank_frontend
+        image: "{{ frontend_image }}"
+        state: started
+        restart_policy: always
+        networks:
+          - name: "{{ docker_network }}"
+        published_ports:
+          - "5173:5173"
+        env:
+          VITE_API_URL: http://localhost:8081
+
+    - name: Wait for Frontend to be ready
+      wait_for:
+        host: localhost
+        port: 5173
+        delay: 5
+        timeout: 60
+
+- name: Display Deployment Information
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Show deployment summary
+      debug:
+        msg:
+          - "=========================================="
+          - "Blood Banking System Deployed Successfully!"
+          - "=========================================="
+          - "Frontend URL: http://{{ groups['webservers'][0] }}:5173"
+          - "Backend API: http://{{ groups['webservers'][0] }}:8081"
+          - "Database: MySQL 8.0 on {{ groups['database'][0] }}:3306"
+          - "=========================================="
+          - "To check container status:"
+          - "  ansible webservers -i inventory.ini -m shell -a 'docker ps'"
+          - "=========================================="
