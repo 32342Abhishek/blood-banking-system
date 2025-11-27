@@ -1,0 +1,31 @@
+# Stage 1: Build stage (Node.js for React/Vite)
+FROM node:18 AS build-stage
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies fresh
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build the Vite app
+RUN npm run build
+
+# Stage 2: Runtime stage (Nginx for serving React)
+FROM nginx:alpine
+
+# Remove default nginx config
+RUN rm -rf /etc/nginx/conf.d/default.conf
+
+# Copy custom nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy React build output to nginx
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+
+EXPOSE 5173
+
+CMD ["nginx", "-g", "daemon off;"]
