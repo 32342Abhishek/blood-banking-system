@@ -65,7 +65,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: abhi9142/bloodbank-backend:v1
+          image: abhi9142/bloodbank-backend:v2
           ports:
             - containerPort: 8081
           env:
@@ -100,7 +100,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: abhi9142/bloodbank-frontend:v1
+          image: abhi9142/bloodbank-frontend:v2
           ports:
             - containerPort: 5173
           env:

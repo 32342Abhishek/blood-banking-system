@@ -3,13 +3,14 @@ FROM maven:3.9.6-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
-# Copy pom.xml and download dependencies
-COPY pom.xml .
-RUN mvn dependency:go-offline
+# Install git to allow repo cloning
+RUN apt-get update && apt-get install -y git
 
-# Copy source code and build
-COPY src ./src
-RUN mvn clean package -DskipTests
+# Clone your blood banking backend repo
+RUN git clone https://github.com/32342Abhishek/blood-banking-system.git .
+
+# Build the application
+RUN cd BloodBackend && mvn clean package -DskipTests
 
 # Stage 2: Run with Tomcat
 FROM tomcat:10.1-jdk21
@@ -18,8 +19,10 @@ FROM tomcat:10.1-jdk21
 RUN rm -rf /usr/local/tomcat/webapps/*
 
 # Copy backend WAR to Tomcat
-COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/bloodbank.war
+COPY --from=build /app/BloodBackend/target/*.war /usr/local/tomcat/webapps/bloodbank.war
+
+# Configure Tomcat to listen on port 8081
+RUN sed -i 's/port="8080"/port="8081"/g' /usr/local/tomcat/conf/server.xml
 
 EXPOSE 8081
 CMD ["catalina.sh", "run"]
-    
